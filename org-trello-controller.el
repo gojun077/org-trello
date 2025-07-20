@@ -1531,22 +1531,47 @@ Returns to BUFFER-NAME at POINT when done."
 
 (defun orgtrello-controller--sync-card-board-change ()
   "Sync card board change to Trello after refile to different org-trello buffer."
-  (when (orgtrello-entity-org-card-p)
-    (save-excursion
-      (org-back-to-heading)
-      (let* ((card-meta (orgtrello-buffer-build-org-card-structure (point)))
-             (card-id (orgtrello-data-entity-id card-meta))
-             (dest-board-id (orgtrello-buffer-board-id)))
-        
-        (when (and card-id dest-board-id card-meta)
-          (orgtrello-log-msg orgtrello-log-info 
-                             (format "org-trello: Syncing card %s to board %s" card-id dest-board-id))
+  (orgtrello-log-msg orgtrello-log-debug "org-trello: Starting board change sync...")
+  
+  (if (orgtrello-entity-org-card-p)
+      (save-excursion
+        (org-back-to-heading)
+        (let* ((card-meta (orgtrello-buffer-build-org-card-structure (point)))
+               (card-id (orgtrello-data-entity-id card-meta))
+               (dest-board-id (orgtrello-buffer-board-id))
+               (current-card-board-id (orgtrello-buffer-get-card-board-id)))
           
-          ;; Use specialized board update function
-          (orgtrello-controller--execute-board-update-query card-meta dest-board-id))))))
+          (orgtrello-log-msg orgtrello-log-debug
+                             (format "org-trello: card-id=%s, dest-board-id=%s, current-card-board-id=%s"
+                                     card-id dest-board-id current-card-board-id))
+          
+          (cond
+           ((not card-id)
+            (orgtrello-log-msg orgtrello-log-error "org-trello: No card ID found - card not synced to Trello yet?"))
+           
+           ((not dest-board-id)
+            (orgtrello-log-msg orgtrello-log-error "org-trello: No destination board ID found"))
+           
+           ((not card-meta)
+            (orgtrello-log-msg orgtrello-log-error "org-trello: Could not build card metadata"))
+           
+           (t
+            (orgtrello-log-msg orgtrello-log-info 
+                               (format "org-trello: Syncing card %s to board %s" card-id dest-board-id))
+            
+            ;; Update the local property first
+            (orgtrello-buffer-set-card-board-id dest-board-id)
+            (orgtrello-log-msg orgtrello-log-debug "org-trello: Updated local orgtrello_id_board property")
+            
+            ;; Use specialized board update function
+            (orgtrello-controller--execute-board-update-query card-meta dest-board-id)))))
+    
+    (orgtrello-log-msg orgtrello-log-error "org-trello: Not on a card - cannot sync board change")))
 
 (defun orgtrello-controller--execute-board-update-query (card-meta target-board-id)
   "Execute a specialized query to update CARD-META's board to TARGET-BOARD-ID."
+  (orgtrello-log-msg orgtrello-log-debug "org-trello: Entering execute-board-update-query...")
+  
   (let* ((card-kwd (orgtrello-controller--retrieve-state-of-card card-meta))
          (list-id (orgtrello-buffer-org-file-get-property card-kwd))
          (card-id (orgtrello-data-entity-id card-meta))
@@ -1557,12 +1582,26 @@ Returns to BUFFER-NAME at POINT when done."
          (card-labels (orgtrello-proxy--tags-to-labels (orgtrello-data-entity-tags card-meta)))
          (card-pos (orgtrello-data-entity-position card-meta)))
     
-    (when (and card-id list-id target-board-id)
+    (orgtrello-log-msg orgtrello-log-debug
+                       (format "org-trello: Extracted values - card-kwd: %s, list-id: %s"
+                               card-kwd list-id))
+    
+    (cond
+     ((not card-id)
+      (orgtrello-log-msg orgtrello-log-error "org-trello: No card-id in metadata"))
+     
+     ((not list-id)
+      (orgtrello-log-msg orgtrello-log-error 
+                         (format "org-trello: No list-id found for keyword '%s'" card-kwd)))
+     
+     ((not target-board-id)
+      (orgtrello-log-msg orgtrello-log-error "org-trello: No target-board-id provided"))
+     
+     (t
       (orgtrello-log-msg orgtrello-log-debug
                          (format "org-trello: API call - moving card %s to board %s, list %s" 
                                  card-id target-board-id list-id))
       
-      ;; Make the API call with explicit idBoard parameter
       (orgtrello-log-msg orgtrello-log-debug
                          (format "org-trello: API parameters - card-id: %s, list-id: %s, target-board-id: %s"
                                  card-id list-id target-board-id))
@@ -1583,6 +1622,8 @@ Returns to BUFFER-NAME at POINT when done."
                                    (prin1-to-string query)))
         
         ;; Execute the query with proper authentication
+        (orgtrello-log-msg orgtrello-log-debug "org-trello: About to call orgtrello-query-http-trello...")
+        
         (orgtrello-query-http-trello query t 
                                      (lambda (response) 
                                        (orgtrello-log-msg orgtrello-log-info 
@@ -1591,7 +1632,9 @@ Returns to BUFFER-NAME at POINT when done."
                                      (lambda (error) 
                                        (orgtrello-log-msg orgtrello-log-error 
                                                           (format "org-trello: Board update failed: %s" 
-                                                                  (prin1-to-string error)))))))))
+                                                                  (prin1-to-string error)))))
+        
+        (orgtrello-log-msg orgtrello-log-debug "org-trello: orgtrello-query-http-trello call completed")))))))
 
 (defun orgtrello-controller--retrieve-state-of-card (card-meta)
   "Retrieve the state of CARD-META to determine list."
