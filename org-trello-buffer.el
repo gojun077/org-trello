@@ -112,6 +112,15 @@ If the VALUE is nil or empty, remove such PROPERTY."
   "Compute the board's id."
   (orgtrello-buffer-org-file-get-property org-trello--property-board-id))
 
+(defun orgtrello-buffer-file-board-id (file-path)
+  "Get the board-id from a specific FILE-PATH."
+  (when (and file-path (file-exists-p file-path))
+    (with-temp-buffer
+      (insert-file-contents file-path)
+      (goto-char (point-min))
+      (when (re-search-forward (concat "^#\\+PROPERTY: " org-trello--property-board-id " \\(.+\\)$") nil t)
+        (match-string 1)))))
+
 (defun orgtrello-buffer-me ()
   "Compute the board's current user."
   (orgtrello-buffer-org-file-get-property org-trello--property-user-me))

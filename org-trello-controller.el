@@ -1454,6 +1454,8 @@ Returns to BUFFER-NAME at POINT when done."
   (orgtrello-controller-setup-properties)
   ;; installing hooks
   (add-hook 'before-save-hook 'orgtrello-controller-prepare-buffer)
+  ;; install refile hooks
+  (orgtrello-controller--install-refile-hooks)
   ;; prepare the buffer at activation time
   (orgtrello-controller-prepare-buffer)
   ;; run hook at startup
@@ -1465,10 +1467,73 @@ Returns to BUFFER-NAME at POINT when done."
   (remove-from-invisibility-spec '(org-trello-cbx-property))
   ;; removing hooks
   (remove-hook 'before-save-hook 'orgtrello-controller-prepare-buffer)
+  ;; remove refile hooks
+  (orgtrello-controller--uninstall-refile-hooks)
   ;; remove org-trello overlays
   (orgtrello-buffer-remove-overlays)
   ;; deactivate org-trello--mode-activated-p
   (setq org-trello--mode-activated-p nil))
+
+(defun orgtrello-controller--capture-refile-source (&rest _)
+  "Capture source information before org-refile operation."
+  (when (and (orgtrello-setup-org-trello-on-p)
+             orgtrello-auto-sync-refile-board-changes)
+    (save-excursion
+      (when (orgtrello-entity-card-p)
+        (org-back-to-heading)
+        (setq org-trello--refile-source-info
+              (list :source-file (buffer-file-name)
+                    :source-marker (point-marker)
+                    :heading (org-get-heading t t t t)
+                    :source-board-id (orgtrello-buffer-board-id)))))))
+
+(defun orgtrello-controller--handle-refile-completion ()
+  "Process org-refile completion for board-id updates."
+  (when (and (orgtrello-setup-org-trello-on-p)
+             orgtrello-auto-sync-refile-board-changes
+             org-trello--refile-source-info
+             (orgtrello-entity-card-p))
+    (let ((source-file (plist-get org-trello--refile-source-info :source-file))
+          (source-board-id (plist-get org-trello--refile-source-info :source-board-id))
+          (dest-file (buffer-file-name))
+          (dest-board-id (orgtrello-buffer-board-id)))
+      
+      (when (and source-file dest-file
+                 (not (string= source-file dest-file))
+                 source-board-id dest-board-id
+                 (not (string= source-board-id dest-board-id)))
+        
+        (orgtrello-log-msg orgtrello-log-info 
+                           (format "org-trello: Card refiled to different board - updating board association"))
+        
+        (orgtrello-controller--sync-card-board-change)))
+    
+    (setq org-trello--refile-source-info nil)))
+
+(defun orgtrello-controller--sync-card-board-change ()
+  "Sync card board change to Trello after refile to different org-trello buffer."
+  (when (orgtrello-entity-card-p)
+    (save-excursion
+      (org-back-to-heading)
+      (let* ((card-id (orgtrello-entity-id-at-point))
+             (dest-board-id (orgtrello-buffer-board-id)))
+        
+        (when (and card-id dest-board-id)
+          (orgtrello-log-msg orgtrello-log-info 
+                             (format "org-trello: Syncing card %s to board %s" card-id dest-board-id))
+          
+          (orgtrello-controller-checks-then-sync-card-to-trello))))))
+
+(defun orgtrello-controller--install-refile-hooks ()
+  "Install org-refile hooks for board-id updates."
+  (when orgtrello-auto-sync-refile-board-changes
+    (advice-add 'org-refile :before #'orgtrello-controller--capture-refile-source)
+    (add-hook 'org-after-refile-insert-hook #'orgtrello-controller--handle-refile-completion)))
+
+(defun orgtrello-controller--uninstall-refile-hooks ()
+  "Uninstall org-refile hooks for board-id updates."
+  (advice-remove 'org-refile #'orgtrello-controller--capture-refile-source)
+  (remove-hook 'org-after-refile-insert-hook #'orgtrello-controller--handle-refile-completion))
 
 (orgtrello-log-msg orgtrello-log-debug "orgtrello-controller loaded!")
 
