@@ -1634,7 +1634,7 @@ Returns to BUFFER-NAME at POINT when done."
                                                           (format "org-trello: Board update failed: %s" 
                                                                   (prin1-to-string error)))))
         
-        (orgtrello-log-msg orgtrello-log-debug "org-trello: orgtrello-query-http-trello call completed")))))))
+        (orgtrello-log-msg orgtrello-log-debug "org-trello: orgtrello-query-http-trello call completed"))))
 
 (defun orgtrello-controller--retrieve-state-of-card (card-meta)
   "Retrieve the state of CARD-META to determine list."
