@@ -1,6 +1,7 @@
 *.elc
 *.log
 *.html
+/.claude/
 /testing-clean-install/
 /elpa/
 *.tar
