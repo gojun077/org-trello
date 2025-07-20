@@ -281,7 +281,7 @@ BUFFER-NAME to specify the buffer with which we currently work."
    'orgtrello-controller-sync-card-to-trello
    (current-buffer)))
 
-(defun orgtrello-controller-sync-card-to-trello (full-meta &optional buffer-name)
+(defun orgtrello-controller-sync-card-to-trello (full-meta &optional otl-buffer)
   "Do the actual card creation/update - from card to item.
 FULL-META is actually dismissed and recomputed here.
 BUFFER-NAME is the buffer on to which act."
@@ -308,7 +308,7 @@ BUFFER-NAME is the buffer on to which act."
                          "Synchronizing card on board '%s'..."
                          (orgtrello-buffer-board-name))
       (org-show-subtree) ;; show subtree, otherwise org-trello/org-trello/#53
-      (-> buffer-name
+      (-> otl-buffer
           orgtrello-buffer-build-org-card-structure
           orgtrello-controller-execute-sync-entity-structure)))))
 
