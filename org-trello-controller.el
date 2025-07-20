@@ -1529,7 +1529,7 @@ Returns to BUFFER-NAME at POINT when done."
                              (format "org-trello: Syncing card %s to board %s" card-id dest-board-id))
           
           ;; Use specialized board update function
-          (orgtrello-controller--execute-board-update-query card-meta dest-board-id)))))
+          (orgtrello-controller--execute-board-update-query card-meta dest-board-id))))))
 
 (defun orgtrello-controller--execute-board-update-query (card-meta target-board-id)
   "Execute a specialized query to update CARD-META's board to TARGET-BOARD-ID."
