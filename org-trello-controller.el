@@ -1540,8 +1540,10 @@ Returns to BUFFER-NAME at POINT when done."
                (card-id (orgtrello-data-entity-id card-meta))
                (dest-board-id (orgtrello-buffer-board-id))
                (current-card-board-id (orgtrello-buffer-get-card-board-id))
-               ;; Keep explicit handle on the buffer so we can safely save it
-               (buffer-name (current-buffer)))
+               ;; Keep explicit handle on the buffer so we can safely save it.  Use a
+               ;; dedicated variable name so we do not shadow the built-in
+               ;; `buffer-name' function.
+               (buffer-obj (current-buffer)))
 
           (orgtrello-log-msg orgtrello-log-debug
                              (format "org-trello: card-id=%s, dest-board-id=%s, current-card-board-id=%s"
@@ -1569,7 +1571,7 @@ Returns to BUFFER-NAME at POINT when done."
             (orgtrello-controller--execute-board-update-query card-meta dest-board-id)
 
             ;; Persist the property change locally
-            (orgtrello-buffer-save-buffer buffer-name))))))
+            (orgtrello-buffer-save-buffer buffer-obj))))))
 
     (orgtrello-log-msg orgtrello-log-error "org-trello: Not on a card - cannot sync board change"))
 
