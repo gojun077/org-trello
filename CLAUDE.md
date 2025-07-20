@@ -1,7 +1,8 @@
-# CLAUDE.md
+CLAUDE.md
+========================================================
 
-This file provides guidance to Claude Code (claude.ai/code) when working
-with code in this repository.
+This file provides guidance to Claude Code (claude.ai/code) and other agentic
+coding tools when working with code in this repository.
 
 ## Project Overview
 
@@ -141,3 +142,38 @@ moved to another `org-trello` buffer via `org-refile`, `org-trello` should
 update the Trello Card's `idBoard` value (known as `board-id` in
 `org-trello`) to reflect the new `org-trello` file buffer aka Trello
 Board the card / H1 header is located in.
+
+**Partial Progress**
+
+If you examine the last 12 commits between the most recent SHA1 commit hash
+`c85063518bf43169281ab6b3584a35f3c32a15c6` to the start of commits for this
+new feature in `b7136c2e2bad1aabc3cdd915ac648919b8d1a57d` I have made edits
+to the following elisp files in the org-trello repo:
+
+- `org-trello-setup.el`
+- `org-trello-buffer.el`
+- `org-trello-controller.el`
+
+Most of the changes have occurred in `org-trello-controller.el`. I recommend
+perusing the `git log` to get some context on the changes made so far.
+
+Currently there is an `elisp` parsing error in `org-trello-controller.el`
+probably due to unmatched parens.
+
+Also, when an org task is refiled to another buffer with `org-refile`, the
+Trello Card's `idBoard` field is not being updated.
+
+**Testing with curl**
+
+In the `org-trello` repo root path you can find `APIKey` and `APIToken` credentials
+necessary for making an HTTP PUT request to the Trello API. Here is a sample request
+to update a Trello card. You can update a field by specifying it in the query or
+by adding an entire JSON payload to the request.
+
+```sh
+  curl --request PUT \
+    --url 'https://api.trello.com/1/cards/{id}?key=APIKey&token=APIToken' \
+    --header 'Accept: application/json'
+```
+
+For `curl` tests, use the `id` `687bd98c6b20f556e9d6d558` with Name `Refactor brainworkshop`.
