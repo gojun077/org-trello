@@ -1372,7 +1372,7 @@ CARD-ID is the needed id to create the comment."
                 (return-point (point)))
     (window-configuration-to-register orgtrello-controller-register)
     (delete-other-windows)
-    (org-switch-to-buffer-other-window org-trello--title-buffer-information)
+    (switch-to-buffer-other-window org-trello--title-buffer-information)
     (erase-buffer)
     (let ((org-inhibit-startup t))
       (org-mode)
