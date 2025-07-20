@@ -1549,6 +1549,10 @@ Returns to BUFFER-NAME at POINT when done."
                                  card-id target-board-id list-id))
       
       ;; Make the API call with explicit idBoard parameter
+      (orgtrello-log-msg orgtrello-log-debug
+                         (format "org-trello: API parameters - card-id: %s, list-id: %s, target-board-id: %s"
+                                 card-id list-id target-board-id))
+      
       (let ((query (orgtrello-api-move-card
                     card-id
                     list-id
@@ -1560,8 +1564,20 @@ Returns to BUFFER-NAME at POINT when done."
                     card-pos
                     target-board-id)))
         
-        ;; Execute the query
-        (orgtrello-query-http query)))))
+        (orgtrello-log-msg orgtrello-log-debug
+                           (format "org-trello: Generated query: %s"
+                                   (prin1-to-string query)))
+        
+        ;; Execute the query with proper authentication
+        (orgtrello-query-http-trello query t 
+                                     (lambda (response) 
+                                       (orgtrello-log-msg orgtrello-log-info 
+                                                          (format "org-trello: Board update successful: %s" 
+                                                                  (prin1-to-string response))))
+                                     (lambda (error) 
+                                       (orgtrello-log-msg orgtrello-log-error 
+                                                          (format "org-trello: Board update failed: %s" 
+                                                                  (prin1-to-string error)))))))))
 
 (defun orgtrello-controller--retrieve-state-of-card (card-meta)
   "Retrieve the state of CARD-META to determine list."
