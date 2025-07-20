@@ -121,6 +121,21 @@ If the VALUE is nil or empty, remove such PROPERTY."
       (when (re-search-forward (concat "^#\\+PROPERTY: " org-trello--property-board-id " \\(.+\\)$") nil t)
         (match-string 1)))))
 
+(defun orgtrello-buffer-get-card-board-id ()
+  "Get the card's stored board ID from its properties."
+  (orgtrello-buffer-card-entry-get (point) org-trello--label-key-board-id))
+
+(defun orgtrello-buffer-set-card-board-id (board-id)
+  "Set the card's board ID property to BOARD-ID."
+  (orgtrello-buffer-org-entry-put (point) org-trello--label-key-board-id board-id))
+
+(defun orgtrello-buffer-card-needs-board-update-p ()
+  "Check if card's board ID needs updating based on current buffer's board ID."
+  (let ((card-board-id (orgtrello-buffer-get-card-board-id))
+        (buffer-board-id (orgtrello-buffer-board-id)))
+    (and buffer-board-id
+         (not (string= card-board-id buffer-board-id)))))
+
 (defun orgtrello-buffer-me ()
   "Compute the board's current user."
   (orgtrello-buffer-org-file-get-property org-trello--property-user-me))

@@ -1506,6 +1506,11 @@ Returns to BUFFER-NAME at POINT when done."
         (orgtrello-log-msg orgtrello-log-info 
                            (format "org-trello: Card refiled to different board - updating board association"))
         
+        ;; Update the card's board ID property to match the new buffer
+        (save-excursion
+          (org-back-to-heading)
+          (orgtrello-buffer-set-card-board-id dest-board-id))
+        
         (orgtrello-controller--sync-card-board-change)))
     
     (setq org-trello--refile-source-info nil)))
@@ -1515,14 +1520,72 @@ Returns to BUFFER-NAME at POINT when done."
   (when (orgtrello-entity-card-p)
     (save-excursion
       (org-back-to-heading)
-      (let* ((card-id (orgtrello-entity-id-at-point))
+      (let* ((card-meta (orgtrello-buffer-build-org-card-structure (point)))
+             (card-id (orgtrello-data-entity-id card-meta))
              (dest-board-id (orgtrello-buffer-board-id)))
         
-        (when (and card-id dest-board-id)
+        (when (and card-id dest-board-id card-meta)
           (orgtrello-log-msg orgtrello-log-info 
                              (format "org-trello: Syncing card %s to board %s" card-id dest-board-id))
           
-          (orgtrello-controller-checks-then-sync-card-to-trello))))))
+          ;; Use specialized board update function
+          (orgtrello-controller--execute-board-update-query card-meta dest-board-id)))))
+
+(defun orgtrello-controller--execute-board-update-query (card-meta target-board-id)
+  "Execute a specialized query to update CARD-META's board to TARGET-BOARD-ID."
+  (let* ((card-kwd (orgtrello-controller--retrieve-state-of-card card-meta))
+         (list-id (orgtrello-buffer-org-file-get-property card-kwd))
+         (card-id (orgtrello-data-entity-id card-meta))
+         (card-name (orgtrello-data-entity-name card-meta))
+         (card-due (orgtrello-data-entity-due card-meta))
+         (card-desc (orgtrello-data-entity-description card-meta))
+         (card-user-ids-assigned (orgtrello-data-entity-member-ids card-meta))
+         (card-labels (orgtrello-proxy--tags-to-labels (orgtrello-data-entity-tags card-meta)))
+         (card-pos (orgtrello-data-entity-position card-meta)))
+    
+    (when (and card-id list-id target-board-id)
+      (orgtrello-log-msg orgtrello-log-debug
+                         (format "org-trello: API call - moving card %s to board %s, list %s" 
+                                 card-id target-board-id list-id))
+      
+      ;; Make the API call with explicit idBoard parameter
+      (let ((query (orgtrello-api-move-card
+                    card-id
+                    list-id
+                    card-name
+                    card-due
+                    card-user-ids-assigned
+                    card-desc
+                    card-labels
+                    card-pos
+                    target-board-id)))
+        
+        ;; Execute the query
+        (orgtrello-query-http query)))))
+
+(defun orgtrello-controller--retrieve-state-of-card (card-meta)
+  "Retrieve the state of CARD-META to determine list."
+  (orgtrello-data-entity-keyword card-meta))
+
+(defun orgtrello-controller-initialize-card-board-ids ()
+  "Initialize orgtrello_id_board property for all cards in current buffer.
+This is useful when first enabling the refile board update feature."
+  (interactive)
+  (when (orgtrello-setup-org-trello-on-p)
+    (let ((buffer-board-id (orgtrello-buffer-board-id))
+          (cards-updated 0))
+      (when buffer-board-id
+        (save-excursion
+          (goto-char (point-min))
+          (while (re-search-forward org-heading-regexp nil t)
+            (when (orgtrello-entity-card-p)
+              (unless (orgtrello-buffer-get-card-board-id)
+                (orgtrello-buffer-set-card-board-id buffer-board-id)
+                (setq cards-updated (1+ cards-updated))))))
+        (orgtrello-log-msg orgtrello-log-info 
+                           (format "org-trello: Initialized board-id property for %d cards" 
+                                   cards-updated))))))
+
 
 (defun orgtrello-controller--install-refile-hooks ()
   "Install org-refile hooks for board-id updates."

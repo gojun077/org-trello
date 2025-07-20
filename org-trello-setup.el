@@ -81,6 +81,9 @@
 (defconst org-trello--label-key-local-checksum (format "%slocal_checksum" org-trello--property-prefix-key)
   "Current card's checksum property.")
 
+(defconst org-trello--label-key-board-id (format "%sid_board" org-trello--property-prefix-key)
+  "Current card's board ID property.")
+
 (defvar org-trello--user-logged-in nil
   "Current user logged in.")
 
