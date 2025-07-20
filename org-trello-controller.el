@@ -286,17 +286,31 @@ BUFFER-NAME to specify the buffer with which we currently work."
 FULL-META is actually dismissed and recomputed here.
 BUFFER-NAME is the buffer on to which act."
   (let ((current-checksum (orgtrello-buffer-card-checksum))
-        (previous-checksum (orgtrello-buffer-get-card-local-checksum)))
-    (if (string= current-checksum previous-checksum)
-        (orgtrello-log-msg orgtrello-log-info
-                           "Card already synchronized, nothing to do!")
+        (previous-checksum (orgtrello-buffer-get-card-local-checksum))
+        (board-needs-update (orgtrello-buffer-card-needs-board-update-p)))
+    
+    (cond
+     ;; Check if board needs updating (priority over checksum)
+     (board-needs-update
+      (orgtrello-log-msg orgtrello-log-info
+                         "Card board assignment needs updating - syncing to board '%s'..."
+                         (orgtrello-buffer-board-name))
+      (orgtrello-controller--sync-card-board-change))
+     
+     ;; Regular checksum-based sync
+     ((string= current-checksum previous-checksum)
+      (orgtrello-log-msg orgtrello-log-info
+                         "Card already synchronized, nothing to do!"))
+     
+     ;; Content changes detected  
+     (t
       (orgtrello-log-msg orgtrello-log-info
                          "Synchronizing card on board '%s'..."
                          (orgtrello-buffer-board-name))
       (org-show-subtree) ;; show subtree, otherwise org-trello/org-trello/#53
       (-> buffer-name
           orgtrello-buffer-build-org-card-structure
-          orgtrello-controller-execute-sync-entity-structure))))
+          orgtrello-controller-execute-sync-entity-structure)))))
 
 (defun orgtrello-controller-do-sync-buffer-to-trello ()
   "Full `org-mode' file synchronization."
