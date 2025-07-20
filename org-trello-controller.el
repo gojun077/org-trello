@@ -711,7 +711,7 @@ This returns the identifier of such board."
   (save-excursion
     (goto-char (point-min))
     (while (search-forward property-name nil t)
-      (delete-region (point-at-bol) (point-at-eol))
+      (delete-region (line-beginning-position) (line-end-position))
       (delete-blank-lines))))
 
 (defun orgtrello-controller-compute-property (prop-name &optional prop-value)
@@ -772,13 +772,13 @@ Works only on properties file."
   (let ((res-list))
     (-map (lambda (hashm)
             (message "color key: %S" (gethash :color hashm "grey"))
-            (-> (format "#+PROPERTY: %s %s"
-                        (gethash (gethash :color hashm)
-                                 orgtrello-setup-data-color-keywords
-                                 :grey)
-                        (gethash :name hashm ""))
-                s-trim-right
-                (push res-list)))
+            (push (-> (format "#+PROPERTY: %s %s"
+                              (gethash (gethash :color hashm)
+                                       orgtrello-setup-data-color-keywords
+                                       :grey)
+                              (gethash :name hashm ""))
+                      s-trim-right)
+                  res-list))
           board-labels)
     res-list))
 
