@@ -1479,7 +1479,7 @@ Returns to BUFFER-NAME at POINT when done."
   (when (and (orgtrello-setup-org-trello-on-p)
              orgtrello-auto-sync-refile-board-changes)
     (save-excursion
-      (when (orgtrello-entity-card-p)
+      (when (orgtrello-entity-org-card-p)
         (org-back-to-heading)
         (setq org-trello--refile-source-info
               (list :source-file (buffer-file-name)
@@ -1492,7 +1492,7 @@ Returns to BUFFER-NAME at POINT when done."
   (when (and (orgtrello-setup-org-trello-on-p)
              orgtrello-auto-sync-refile-board-changes
              org-trello--refile-source-info
-             (orgtrello-entity-card-p))
+             (orgtrello-entity-org-card-p))
     (let ((source-file (plist-get org-trello--refile-source-info :source-file))
           (source-board-id (plist-get org-trello--refile-source-info :source-board-id))
           (dest-file (buffer-file-name))
@@ -1517,7 +1517,7 @@ Returns to BUFFER-NAME at POINT when done."
 
 (defun orgtrello-controller--sync-card-board-change ()
   "Sync card board change to Trello after refile to different org-trello buffer."
-  (when (orgtrello-entity-card-p)
+  (when (orgtrello-entity-org-card-p)
     (save-excursion
       (org-back-to-heading)
       (let* ((card-meta (orgtrello-buffer-build-org-card-structure (point)))
@@ -1578,7 +1578,7 @@ This is useful when first enabling the refile board update feature."
         (save-excursion
           (goto-char (point-min))
           (while (re-search-forward org-heading-regexp nil t)
-            (when (orgtrello-entity-card-p)
+            (when (orgtrello-entity-org-card-p)
               (unless (orgtrello-buffer-get-card-board-id)
                 (orgtrello-buffer-set-card-board-id buffer-board-id)
                 (setq cards-updated (1+ cards-updated))))))
