@@ -1539,7 +1539,9 @@ Returns to BUFFER-NAME at POINT when done."
         (let* ((card-meta (orgtrello-buffer-build-org-card-structure (point)))
                (card-id (orgtrello-data-entity-id card-meta))
                (dest-board-id (orgtrello-buffer-board-id))
-               (current-card-board-id (orgtrello-buffer-get-card-board-id)))
+               (current-card-board-id (orgtrello-buffer-get-card-board-id))
+               ;; Keep explicit handle on the buffer so we can safely save it
+               (buffer-name (current-buffer)))
 
           (orgtrello-log-msg orgtrello-log-debug
                              (format "org-trello: card-id=%s, dest-board-id=%s, current-card-board-id=%s"
@@ -1563,8 +1565,11 @@ Returns to BUFFER-NAME at POINT when done."
             (orgtrello-buffer-set-card-board-id dest-board-id)
             (orgtrello-log-msg orgtrello-log-debug "org-trello: Updated local orgtrello_id_board property")
 
-            ;; Use specialized board update function
-            (orgtrello-controller--execute-board-update-query card-meta dest-board-id)))))
+            ;; Use specialized board update function (synchronous)
+            (orgtrello-controller--execute-board-update-query card-meta dest-board-id)
+
+            ;; Persist the property change locally
+            (orgtrello-buffer-save-buffer buffer-name))))))
 
     (orgtrello-log-msg orgtrello-log-error "org-trello: Not on a card - cannot sync board change")))
 
