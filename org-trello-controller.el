@@ -1571,7 +1571,7 @@ Returns to BUFFER-NAME at POINT when done."
             ;; Persist the property change locally
             (orgtrello-buffer-save-buffer buffer-name))))))
 
-    (orgtrello-log-msg orgtrello-log-error "org-trello: Not on a card - cannot sync board change")))
+    (orgtrello-log-msg orgtrello-log-error "org-trello: Not on a card - cannot sync board change"))
 
 (defun orgtrello-controller--execute-board-update-query (card-meta target-board-id)
   "Execute a specialized query to update CARD-META's board to TARGET-BOARD-ID."
