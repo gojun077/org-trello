@@ -195,9 +195,9 @@ Optional fields DUE, ID-MEMBERS, DESC, LABELS, POS query."
 
 (defun orgtrello-api-move-card (card-id idList
                                         &optional name due id-members desc
-                                        labels pos)
+                                        labels pos id-board)
   "Create an update a card CARD-ID to IDLIST.
-Optional NAME, DUE date, ID-MEMBERS, DESC, LABELS, POS query."
+Optional NAME, DUE date, ID-MEMBERS, DESC, LABELS, POS, ID-BOARD query."
   (let ((due (if due due "")))
     (->> (orgtrello-api--deal-with-optional-values
           `((,name . ("name" . ,name))
@@ -205,7 +205,8 @@ Optional NAME, DUE date, ID-MEMBERS, DESC, LABELS, POS query."
             (,due . ("due" . ,due))
             (,desc . ("desc" . ,desc))
             (,labels . ("labels" . ,labels))
-            (,pos . ("pos" . ,pos)))
+            (,pos . ("pos" . ,pos))
+            (,id-board . ("idBoard" . ,id-board)))
           `(("idList" . ,idList)))
          (orgtrello-api-make-query "PUT" (format "/cards/%s" card-id)))))
 
