@@ -76,7 +76,7 @@ The project uses:
 Tests are located in the `test/` directory with corresponding `-test.el`
 files for each namespace. Use `make test` to run the full test suite.
 
-## org-refile should update a Trello card's idBoard value
+## Feature: add support for updating a Trello card's idBoard value
 
 Reference: [Update a Card](https://developer.atlassian.com/cloud/trello/rest/api-group-cards/#api-cards-id-put)
 
@@ -156,6 +156,10 @@ to the following elisp files in the org-trello repo:
 
 Most of the changes have occurred in `org-trello-controller.el`. I recommend
 perusing the `git log` to get some context on the changes made so far.
+
+One major change in existing `org-trello` behavior is that I added a new
+`PROPERTY` `:orgtrello_id_board:` to the `:PROPERTIES:` drawer of each
+org task / Trello card in an `org-trello` file buffer.
 
 Currently there is an `elisp` parsing error in `org-trello-controller.el`
 probably due to unmatched parens.
