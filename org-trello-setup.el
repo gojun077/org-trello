@@ -145,6 +145,11 @@ This is intended as a buffer local variable.")
   "Flag to notify that the mode is activated or not.
 This is intended as a buffer local variable.")
 
+(defvar org-trello--refile-source-info nil
+  "Stores information about the source location during org-refile operations.
+Contains a plist with :file, :marker, :heading, and :board-id keys.
+This is intended as a buffer local variable.")
+
 (defconst org-trello--checklist-indent 2 "Indentation for checklist.")
 
 (defconst org-trello--item-indent 4 "Indentation for item.")
@@ -180,6 +185,7 @@ slightly different than the one from the buffer."
         org-trello--hmap-users-name-id
         org-trello--user-logged-in
         org-trello--mode-activated-p
+        org-trello--refile-source-info
         ;; orgtrello-setup-use-position-in-checksum-computation
         ;; -> should ideally be that way, need to fix tests before that
         ))
@@ -380,6 +386,15 @@ Other possibilities is helm but it's up to you to install the dependencies.
   "Some action can be dangerous removing entity for example.
 This custom determine if the user wants to be asked confirmation
 before doing some of those sensitive actions."
+  :require 'org-trello
+  :group 'org-trello)
+
+(defcustom orgtrello-auto-sync-refile-board-changes t
+  "When non-nil, automatically update card board-id when refiling across files.
+When an org heading representing a Trello card is moved via org-refile
+from one org-trello buffer to another, this setting controls whether
+the card's board association should be automatically updated in Trello."
+  :type 'boolean
   :require 'org-trello
   :group 'org-trello)
 
