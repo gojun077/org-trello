@@ -4,9 +4,11 @@ ARCHIVE = $(PACKAGE)-$(VERSION).tar
 EMACS ?= emacs
 CASK ?= cask
 SRCREGEX = test/*.el
+# Alternative: uncomment to lint all tracked Emacs Lisp files
+# SRCREGEX = $(shell git ls-files '*.el')
 LANG=en_US.UTF-8
 
-.PHONY: all clean test
+.PHONY: all clean lint test
 
 activate:
 	nix develop
@@ -30,11 +32,19 @@ clean: clean-dist clean-cask
 install:
 	[ ! -d .cask ] && ${CASK} install || echo
 
-lint:
+lint-parens:
+	@for file in $(SRCREGEX); do \
+		echo "Checking parentheses on $$file..."; \
+		${EMACS} -Q --batch --eval "(progn (find-file \"$$file\") (check-parens))" || { echo "Mismatched parentheses in $$file"; exit 1; }; \
+	done
+
+lint-elc:
 	@for file in $(SRCREGEX); do \
 		echo "Running 'byte-compile-file' on $$file..."; \
-		${CASK} exec emacs -Q --batch -L . -L test --eval "(byte-compile-file \"$$file\")" || true; \
+		${CASK} exec ${EMACS} -Q --batch -L . -L test --eval "(byte-compile-file \"$$file\")" || true; \
 	done
+
+lint: lint-parens lint-elc  # Composite target
 
 test: install
 	${CASK} exec ert-runner
