@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:orgmode.org)",
+      "Bash(make:*)",
+      "Bash(emacs:*)",
+      "Bash(sed:*)"
+    ],
+    "deny": []
+  }
+}

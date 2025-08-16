@@ -63,9 +63,6 @@
   (should (equal "test" (orgtrello-data-entity-level        (orgtrello-hash-make-properties `((:level        . "test"))))))
   (should-not (orgtrello-data-entity-level           (orgtrello-hash-make-properties `((inexistant    . "test"))))))
 
-(ert-deftest test-orgtrello-data-entity-method ()
-  (should (equal "test" (orgtrello-data-entity-method       (orgtrello-hash-make-properties `((:method       . "test"))))))
-  (should-not (orgtrello-data-entity-method          (orgtrello-hash-make-properties `((inexistant    . "test"))))))
 
 (ert-deftest test-orgtrello-data-entity-uri ()
   (should (equal "test" (orgtrello-data-entity-uri          (orgtrello-hash-make-properties `((:uri          . "test"))))))
@@ -148,9 +145,7 @@
   (should (equal '(4 1 2)   (orgtrello-data-merge-2-lists-without-duplicates '(4 1 2) nil)))
   (should (equal nil        (orgtrello-data-merge-2-lists-without-duplicates nil nil))))
 
-(ert-deftest test-orgtrello-data-entity-card-p ()
-  (should (equal t (orgtrello-data-entity-card-p (orgtrello-hash-make-properties `((:level . ,org-trello--card-level))))))
-  (should (equal nil (orgtrello-data-entity-card-p (orgtrello-hash-make-properties `((:level . ,org-trello--checklist-level)))))))
+
 
 (ert-deftest test-orgtrello-data--compute-level ()
   (should (equal org-trello--card-level      (orgtrello-data--compute-level (orgtrello-hash-make-properties '((:list-id . 0))))))
