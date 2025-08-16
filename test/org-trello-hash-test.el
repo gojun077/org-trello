@@ -1,6 +1,6 @@
+(require 'test-helper)
 (require 'org-trello-hash)
 (require 'ert)
-(require 'el-mock)
 (require 'dash)
 
 (ert-deftest test-orgtrello-hash-empty-hash ()

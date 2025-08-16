@@ -1,3 +1,4 @@
+(require 'test-helper)
 (require 'org-trello-deferred)
 (require 'ert)
 
@@ -56,6 +57,6 @@
 
 (ert-deftest test-orgtrello-deferred-eval-computation ()
   (should (eq 3
-              (with-mock
-                (mock (orgtrello-deferred--compute-deferred-computation :initial-state :fns :log :no-success-log) => '(+ 1 2))
-                (orgtrello-deferred-eval-computation :initial-state :fns :log :no-success-log)))))
+              (ot-with-stub* 'orgtrello-deferred--compute-deferred-computation '(+ 1 2)
+                (lambda ()
+                  (orgtrello-deferred-eval-computation :initial-state :fns :log :no-success-log))))))

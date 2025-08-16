@@ -1,6 +1,6 @@
+(require 'test-helper)
 (require 'org-trello-api)
 (require 'ert)
-(require 'el-mock)
 
 (ert-deftest test-orgtrello-api-make-query ()
   (should (equal :some-method (gethash :method (orgtrello-api-make-query :some-method :some-uri))))

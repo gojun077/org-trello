@@ -1,6 +1,6 @@
+(require 'test-helper)
 (require 'org-trello-utils)
 (require 'ert)
-(require 'el-mock)
 
 (ert-deftest test-orgtrello-utils-replace-in-string ()
   (should (equal "something-to-be-replaced" (orgtrello-utils-replace-in-string " " "-" "something to be replaced")))

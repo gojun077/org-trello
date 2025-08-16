@@ -1,6 +1,6 @@
+(require 'test-helper)
 (require 'org-trello-entity)
 (require 'ert)
-(require 'el-mock)
 
 (ert-deftest test-orgtrello-entity-comment-description-region ()
   (should (equal '(49 85)

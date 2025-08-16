@@ -3,7 +3,7 @@ VERSION = $$(grep "^;; Version: " $(PACKAGE).el | cut -f3 -d' ')
 ARCHIVE = $(PACKAGE)-$(VERSION).tar
 EMACS ?= emacs
 CASK ?= cask
-SRCREGEX = test/*.el
+SRCREGEX = *.el
 LANG=en_US.UTF-8
 
 .PHONY: all clean test
@@ -30,10 +30,10 @@ clean: clean-dist clean-cask
 install:
 	[ ! -d .cask ] && ${CASK} install || echo
 
-lint: test
+lint:
 	@for file in $(SRCREGEX); do \
 		echo "Running 'byte-compile-file' on $$file..."; \
-		emacs -Q --batch -L . -L test --eval "(byte-compile-file \"test/$$file\")" || true; \
+		cask exec emacs -Q --batch -L . -L test --eval "(byte-compile-file $$file)" || true; \
 	done
 
 test: install

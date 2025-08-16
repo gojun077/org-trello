@@ -1,6 +1,6 @@
+(require 'test-helper)
 (require 'org-trello-date)
 (require 'ert)
-(require 'el-mock)
 
 (ert-deftest test-orgtrello-date-convert-org-date-to-trello-date ()
   (should (string= "2013-07-29T13:00:00.000Z"

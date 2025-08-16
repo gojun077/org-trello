@@ -189,6 +189,8 @@ those specific asserts.
 - Tests migrated
   - `test/org-trello-log-test.el`: uses `ot-with-stub*` to stub `format-time-string`; added `lexical-binding` header; requires `test-helper`.
   - `test/org-trello-input-test.el`: uses `ot-with-stub*` for `ido-completing-read`, `helm-comp-read`, `read-string`, `y-or-n-p`; added `lexical-binding` header; requires `test-helper`.
+  - `test/org-trello-deferred-test.el`: replaced final `with-mock` with `ot-with-stub*` for `orgtrello-deferred--compute-deferred-computation`; requires `test-helper`.
+  - Removed unused `(require 'el-mock)` and added `(require 'test-helper)` in tests that don’t use mocking: `org-trello-utils-test.el`, `org-trello-hash-test.el`, `org-trello-entity-test.el`, `org-trello-date-test.el`, `org-trello-api-test.el`.
 
 - Linting
   - Documented correct `(check-parens)` usage that opens the file in batch before checking.
