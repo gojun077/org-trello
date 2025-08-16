@@ -288,7 +288,7 @@
                    (mock (delete-region :start :end) => :delete-region-done)
                    (orgtrello-proxy--delete-region :start :end)))))
 
-(ert-deftest test-orgtrello-proxy--card ()
+(ert-deftest test-orgtrello-proxy--map-fn-dispatch-create-update ()
   (should (equal 'orgtrello-proxy--card      (gethash org-trello--card-level orgtrello-proxy--map-fn-dispatch-create-update)))
   (should (equal 'orgtrello-proxy--checklist (gethash org-trello--checklist-level orgtrello-proxy--map-fn-dispatch-create-update)))
   (should (equal 'orgtrello-proxy--item      (gethash org-trello--item-level orgtrello-proxy--map-fn-dispatch-create-update))))
