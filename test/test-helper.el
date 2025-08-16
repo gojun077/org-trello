@@ -21,14 +21,57 @@
 ;;; Commentary:
 ;;; Code:
 
-(when (require 'cl-lib 'no-error)
+
+;; Ensure cl-lib is available and provide a small alias for legacy code/tests.
+(when (require 'cl-lib nil t)
   (defalias 'incf 'cl-incf))
 
-(require 'undercover)
-(undercover "*.el"
-            (:exclude "*-tests.el")
-            (:report-file "/tmp/undercover-report.json"))
+;; Load undercover if available in the environment.
+(when (require 'undercover nil t)
+  ;; Limit coverage to project sources and exclude tests and pkg file.
+  ;; Use `eval` to avoid compile-time warnings about keyword forms.
+  (eval '(undercover "org-trello-*.el"
+                    (:exclude "org-trello-pkg.el" "*-test.el")
+                    (:report-file "/tmp/undercover-report.json"))))
 
-(require 'org-trello)
+;; Minimal mocking/stubbing helpers for ERT-based tests
+;; Usage:
+;;   (ot-with-stub format-time-string "fixed"
+;;     (foo (format-time-string "%Y")))
+;;   (ot-with-wrap some-fn (lambda (orig)
+;;                           (lambda (&rest args)
+;;                             (message "called")
+;;                             (apply orig args)))
+;;     (some-fn 1 2 3))
+(defmacro ot-with-stub (fn value &rest body)
+  "Temporarily make FN return VALUE while executing BODY.
+FN is a symbol of a function to stub. VALUE is the return value.
+All arguments passed to FN are ignored."
+  (declare (indent 1))
+  `(ot-with-stub* ',fn ,value (lambda () ,@body)))
 
+(defmacro ot-with-wrap (fn wrapper &rest body)
+  "Temporarily wrap FN using WRAPPER while executing BODY.
+WRAPPER is a function that receives the original function and must
+return a new function to be installed as FN."
+  (declare (indent 1))
+  `(let ((orig (symbol-function ,fn)))
+     (unwind-protect
+         (progn (fset ,fn (funcall ,wrapper orig))
+                ,@body)
+       (fset ,fn orig))))
+
+;; Function variant to avoid macroexpansion timing issues in some runners
+(defun ot-with-stub* (fn value thunk)
+  "Dynamically bind function cell of FN to a constant VALUE for THUNK.
+FN is a symbol naming a function. THUNK is a zero-arg function."
+  (let ((orig (symbol-function fn)))
+    (unwind-protect
+        (progn (fset fn (lambda (&rest _) value))
+               (funcall thunk))
+      (fset fn orig))))
+
+(require 'org-trello nil t)
+
+(provide 'test-helper)
 ;;; test-helper.el ends here

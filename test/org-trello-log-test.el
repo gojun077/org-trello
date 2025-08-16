@@ -1,3 +1,6 @@
+;;; org-trello-log-test.el --- -*- lexical-binding: t; -*-
+
+(require 'test-helper)
 (require 'org-trello-log)
 
 (ert-deftest test-orgtrello-log-msg ()
@@ -32,10 +35,13 @@
                    (let ((orgtrello-log-level orgtrello-log-info))
                      (orgtrello-log-msg orgtrello-log-info "done 95% of work"))))
   (should (string= "org-trello - Hi there! You have done 95% of the work at 2018/03/31 07:34:48"
-                   (with-mock
-                     (mock (format-time-string "%Y/%m/%d %H:%M:%S") => "2018/03/31 07:34:48")
-                     (let ((orgtrello-log-level orgtrello-log-info))
-                       (orgtrello-log-msg orgtrello-log-info "Hi there! You have done 95% of the work at %s" (format-time-string "%Y/%m/%d %H:%M:%S")))))))
+                   (ot-with-stub* 'format-time-string "2018/03/31 07:34:48"
+                     (lambda ()
+                       (let ((orgtrello-log-level orgtrello-log-info))
+                         (orgtrello-log-msg orgtrello-log-info
+                                            "Hi there! You have done 95% of the work at %s"
+                                            (format-time-string "%Y/%m/%d %H:%M:%S")))))))
+  )
 
 (provide 'org-trello-log-test)
 ;;; org-trello-log-test.el ends here
