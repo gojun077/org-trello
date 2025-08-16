@@ -144,7 +144,12 @@
   (should (equal 1 (orgtrello-cbx--get-level '(1 2 3))))
   (should (equal 2 (orgtrello-cbx--get-level '(2 3)))))
 
-
+(ert-deftest test-orgtrello-cbx--read-properties-from-point ()
+  (should (equal '((orgtrello_id . "123"))
+                 (orgtrello-tests-with-temp-buffer "- [X] some checkbox :PROPERTIES: {\"orgtrello_id\":\"123\"}" (orgtrello-cbx--read-properties-from-point (point)))))
+  (should (equal nil
+                 (orgtrello-tests-with-temp-buffer "- [X] some checkbox :PROPERTIES: {}" (orgtrello-cbx--read-properties-from-point (point)))))
+  (should (equal nil (orgtrello-tests-with-temp-buffer "- [X] some checkbox" (orgtrello-cbx--read-properties-from-point (point))))))
 
 (ert-deftest test-orgtrello-cbx--write-properties-at-point ()
   (should (equal "- [X] some checkbox :PROPERTIES: {\"orgtrello_id\":\"456\"}"
