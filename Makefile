@@ -30,7 +30,7 @@ install:
 	[ ! -d .cask ] && ${CASK} install || echo
 
 test: install
-	${CASK} exec ert-runner
+	${CASK} with emacs ert-runner
 
 pkg-file:
 	${CASK} pkg-file
