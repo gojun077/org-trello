@@ -1,6 +1,7 @@
 *.elc
 *.log
 *.html
+*.pw
 /testing-clean-install/
 /elpa/
 *.tar
