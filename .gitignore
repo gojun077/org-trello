@@ -2,7 +2,6 @@
 *.log
 *.html
 *.pw
-/.claude/
 /testing-clean-install/
 /elpa/
 *.tar
