@@ -30,6 +30,10 @@ clean: clean-dist clean-cask
 	${CASK} clean-elc
 
 install:
+	@command -v cask >/dev/null 2>&1 || { \
+		echo "Error: 'cask' not found in PATH. Please install from https://github.com/cask/cask"; \
+		exit 1; \
+	}
 	[ ! -d .cask ] && ${CASK} install || echo
 
 lint-parens:
