@@ -1,0 +1,88 @@
+PACKAGE = org-trello
+VERSION = $$(grep "^;; Version: " $(PACKAGE).el | cut -f3 -d' ')
+ARCHIVE = $(PACKAGE)-$(VERSION).tar
+EMACS ?= emacs
+STRAIGHT ?= straight.el
+SRCREGEX = test/*.el
+# Alternative: uncomment to lint all tracked Emacs Lisp files
+# SRCREGEX = $(shell git ls-files '*.el')
+LANG=en_US.UTF-8
+STRAIGHT_DIR = $(HOME)/.emacs.d/straight
+STRAIGHT_BUILD_DIR = $(STRAIGHT_DIR)/build
+
+.PHONY: all clean lint test
+
+activate:
+	nix develop
+
+pr:
+	hub pull-request -b org-trello:master
+
+build:
+	@echo "Build is handled by straight.el during installation"
+
+clean-straight:
+	[ -d $(STRAIGHT_BUILD_DIR)/$(PACKAGE) ] && rm -rf $(STRAIGHT_BUILD_DIR)/$(PACKAGE)/ || echo
+
+clean-dist:
+	[ -d dist ] && rm -rf dist/ || echo
+
+clean: clean-dist clean-straight
+	rm -rf ${ARCHIVE}
+	find . -name "*.elc" -delete
+
+install:
+	@echo "Installing dependencies with straight.el..."
+	${EMACS} -Q --batch --eval "\
+	(setq straight-check-for-modifications nil) \
+	(defvar bootstrap-version) \
+	(let ((bootstrap-file (expand-file-name \"straight/repos/straight.el/bootstrap.el\" user-emacs-directory)) \
+	      (bootstrap-version 5)) \
+	  (unless (file-exists-p bootstrap-file) \
+	    (with-current-buffer \
+	        (url-retrieve-synchronously \
+	         \"https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el\" \
+	         'silent 'inhibit-cookies) \
+	      (goto-char (point-max)) \
+	      (eval-print-last-sexp))) \
+	  (load bootstrap-file nil 'nomessage)) \
+	(straight-use-package '$(PACKAGE))"
+
+lint-parens:
+	@for file in $(SRCREGEX); do \
+		echo "Checking parentheses on $$file..."; \
+		${EMACS} -Q --batch --eval "(progn (find-file \"$$file\") (check-parens))" || { echo "Mismatched parentheses in $$file"; exit 1; }; \
+	done
+
+lint-elc:
+	@for file in $(SRCREGEX); do \
+		echo "Running 'byte-compile-file' on $$file..."; \
+		${EMACS} -Q --batch -L . -L test --eval "(byte-compile-file \"$$file\")" || true; \
+	done
+
+lint: lint-parens lint-elc  # Composite target
+
+test: install
+	${EMACS} -Q --batch -L . -L test -l ert -l test/org-trello-test.el --eval "(ert-run-tests-batch-and-exit)"
+
+pkg-file:
+	@echo "Package file management not needed with straight.el"
+
+pkg-el:
+	@echo "Package building not needed with straight.el"
+
+package: clean
+	@echo "Creating package archive..."
+	mkdir -p dist
+	tar -cf dist/$(ARCHIVE) *.el *.md LICENSE Makefile
+
+info:
+	@echo "Package: $(PACKAGE)"
+	@echo "Version: $(VERSION)"
+	@echo "Archive: $(ARCHIVE)"
+
+release:
+	./release.sh $(VERSION) $(PACKAGE)
+
+version:
+	@echo "application $(PACKAGE): $(VERSION)\npackage: $(ARCHIVE)"
