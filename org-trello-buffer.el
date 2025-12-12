@@ -130,10 +130,16 @@ If the VALUE is nil or empty, remove such PROPERTY."
   (orgtrello-buffer-org-entry-put (point) org-trello--label-key-board-id board-id))
 
 (defun orgtrello-buffer-card-needs-board-update-p ()
-  "Check if card's board ID needs updating based on current buffer's board ID."
-  (let ((card-board-id (orgtrello-buffer-get-card-board-id))
+  "Check if card's board ID needs updating based on current buffer's board ID.
+Returns nil for new cards that have no Trello card ID yet."
+  (let ((card-id (orgtrello-buffer-card-entry-get (point) org-trello--label-key-id))
+        (card-board-id (orgtrello-buffer-get-card-board-id))
         (buffer-board-id (orgtrello-buffer-board-id)))
-    (and buffer-board-id
+    ;; Only check for board update if card already exists in Trello (has card-id)
+    ;; New cards (no card-id) should go through normal creation flow
+    (and card-id
+         buffer-board-id
+         card-board-id
          (not (string= card-board-id buffer-board-id)))))
 
 (defun orgtrello-buffer-me ()
