@@ -265,9 +265,10 @@ BUFFER-NAME to specify the buffer with which we currently work."
       (eval (orgtrello-proxy-delete-entity current)))))
 
 (defun orgtrello-controller--indent-card (entity)
-  "Indent properly the card information (whatever the ENTITY is)."
-  (orgtrello-buffer-indent-card-description)
-  (orgtrello-buffer-indent-card-data)
+  ;; "Indent properly the card information (whatever the ENTITY is)."
+  ;; (orgtrello-buffer-indent-card-description)
+  ;; (orgtrello-buffer-indent-card-data)
+  (message "ot-controller--indent-card do nothing")
   :ok)
 
 (defun orgtrello-controller-checks-then-sync-card-to-trello ()
@@ -1454,9 +1455,10 @@ Returns to BUFFER-NAME at POINT when done."
 (defun orgtrello-controller-prepare-buffer ()
   "Prepare the buffer to receive org-trello data."
   (when (orgtrello-setup-org-trello-on-p)
-    (orgtrello-buffer-install-overlays)
-    (orgtrello-buffer-indent-all-card-descriptions)
-    (orgtrello-buffer-indent-all-card-data)))
+    ;; (orgtrello-buffer-install-overlays)
+    ;; (orgtrello-buffer-indent-all-card-descriptions)
+    ;; (orgtrello-buffer-indent-all-card-data)))
+    (message "ot-controller-prepare-buffer don't apply indent")))
 
 (defun orgtrello-controller-mode-on-hook-fn ()
   "Start org-trello hook function to install some org-trello setup."

@@ -565,10 +565,11 @@ opens new issue in org-trello's github tracker."
           'do-append)
 
 (add-hook 'org-trello-mode-on-hook
-          (lambda ()
-            ;; deactivate org-indent-mode if activated
-            (when (and (boundp 'org-indent-mode) org-indent-mode)
-              (org-indent-mode -1))))
+          ;; (lambda ()
+          ;;   ;; deactivate org-indent-mode if activated
+          ;;   (when (and (boundp 'org-indent-mode) org-indent-mode)
+          ;;     (org-indent-mode -1))))
+          (message "do nothing ot-mode-on-hook"))
 
 (defvar org-trello-mode-off-hook)
 (setq org-trello-mode-off-hook nil) ;; for dev
